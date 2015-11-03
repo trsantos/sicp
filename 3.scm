@@ -442,4 +442,4 @@
 ;; As outras definições (withdraw, deposit e dispatch) poderiam apontar para
 ;; os mesmos objetos de função criados quando definimos acc, sendo portanto
 ;; compartilhados. Isso não afetaria o estado local de acc nem de acc2, já
-;; que o que há de diferente entre eles estará definido em frames separados.
+;; que o que houver de diferente entre eles estará definido em frames separados.
