@@ -298,5 +298,148 @@
 ;; 0 se a expressão for avaliada da esquerda para a direita
 ;; 1 se da direita para a esquerda
 
-;;; Text
+;;; SECTION 3.2.1
 
+(define (square x)
+  (* x x))
+
+(define square
+  (lambda (x) (* x x)))
+
+;;; SECTION 3.2.2
+
+(define (square x)
+  (* x x))
+
+(define (sum-of-squares x y)
+  (+ (square x) (square y)))
+
+(define (f a)
+  (sum-of-squares (+ a 1) (* a 2)))
+
+;: (sum-of-squares (+ a 1) (* a 2))
+
+;;; 3.9
+
+(define (factorial n)
+  (if (= n 1)
+      1
+      (* n (factorial (- n 1)))))
+
+(define (factorial n)
+  (fact-iter 1 1 n))
+
+(define (fact-iter product counter max-count)
+  (if (> counter max-count)
+      product
+      (fact-iter (* counter product)
+                 (+ counter 1)
+                 max-count)))
+
+;; Feito num caderno
+
+;;; SECTION 3.2.3
+
+(define (make-withdraw balance)
+  (lambda (amount)
+    (if (>= balance amount)
+        (begin (set! balance (- balance amount))
+               balance)
+        "Insufficient funds")))
+
+;: (define W1 (make-withdraw 100))
+;: (W1 50)
+
+;: (define W2 (make-withdraw 100))
+
+;;; 3.10
+
+(define (make-withdraw initial-amount)
+  (let ((balance initial-amount))
+    (lambda (amount)
+      (if (>= balance amount)
+          (begin (set! balance (- balance amount))
+                 balance)
+          "Insufficient funds"))))
+
+;; versão equivalente usando apenas lambdas
+(define (make-withdraw initial-amount)
+  ((lambda (balance)
+     (lambda (amount)
+       (if (>= balance amount)
+	   (begin (set! balance (- balance amount))
+		  balance)
+	   "Insufficient funds")))
+   initial-amount))
+
+;: (define W1 (make-withdraw 100))
+;: (W1 50)
+;: (define W2 (make-withdraw 100))
+
+;; Fiz os diagramas no caderno. Mas uma diferença entre as duas estruturas é que,
+;; usando a definição de make-withdraw deste exercício, o valor de initial-amount
+;; é preservado dentro dos objetos W1 e W2 e nós poderíamos utilizá-lo se assim o
+;; desejássemos. Quer dizer, há um frame intermediário contendo
+;; initial-amount entre o que contém balance e o global.
+;;
+;; Nota: Os diagramas feitos por Weiqun Zhang estão muito bons:
+;; https://wqzhang.wordpress.com/2009/07/13/sicp-exercise-3-10/
+
+
+;;;SECTION 3.2.4
+
+(define (average x y)
+  (/ (+ x y) 2))
+
+;; same as in section 1.1.8
+(define (sqrt x)
+  (define (good-enough? guess)
+    (< (abs (- (square guess) x)) 0.001))
+  (define (improve guess)
+    (average guess (/ x guess)))
+  (define (sqrt-iter guess)
+    (if (good-enough? guess)
+        guess
+        (sqrt-iter (improve guess))))
+  (sqrt-iter 1.0))
+
+
+;; EXERCISE 3.11
+
+(define (make-account balance)
+  (define (withdraw amount)
+    (if (>= balance amount)
+        (begin (set! balance (- balance amount))
+               balance)
+        "Insufficient funds"))
+  (define (deposit amount)
+    (set! balance (+ balance amount))
+    balance)
+  (define (dispatch m)
+    (cond ((eq? m 'withdraw) withdraw)
+          ((eq? m 'deposit) deposit)
+          (else (error "Unknown request -- MAKE-ACCOUNT"
+                       m))))
+  dispatch)
+
+;: (define acc (make-account 50))
+;:
+;: ((acc 'deposit) 40)
+;: ((acc 'withdraw) 60)
+;:
+;: (define acc2 (make-account 100))
+
+;; Desenhos no caderno... Preciso tirar fotos desses exercícios?
+;;
+;; O estado local de acc é armazenado no frame criado quando chamamos (make-account 50).
+;; Neste frame, estão definidos balance, withdraw, deposit e dispatch, sendo os
+;; três últimos ponteiros para objetos de funções em que o ambiente pai é o
+;; próprio frame. acc será definido no ambiente global como que apontando para
+;; dispatch definido no frame citado.
+;;
+;; Se definirmos outro objeto account acc2 no ambiente global, este também terá
+;; seu próprio ambiente e balance estará definido localmente para acc2.
+;; As outras definições (withdraw, deposit e dispatch) poderiam apontar para
+;; os mesmos objetos de função criados quando definimos acc, sendo portanto
+;; compartilhados. Isso não afetaria o estado local de acc nem de acc2, já
+;; que o que há de diferente entre eles estará definido em frames separados.
